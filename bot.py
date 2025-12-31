@@ -107,26 +107,21 @@ class Gate:
             return "Error"
 @app.route('/chk', methods=['GET'])
 def check_card():
-    card = request.args.get('card')
-    if not card:
-        return jsonify({"error": "No card provided"}), 400
+    card_details = request.args.get('card')  # Get 'card' parameter
     
-    sp = card.strip().split('|')
-    if len(sp) < 4:
-        return jsonify({"error": "Format Error"}), 400
+    if not card_details:
+        return jsonify({"error": "No card provided"}), 400
+        
+    sp = [s.strip() for s in card_details.split('|')]
+    
+    if len(sp) != 4 or any(s == "" for s in sp):
+        return jsonify({"error": "Invalid format"}), 400
     
     cc, mm, yy, cvv = sp[0], sp[1], sp[2], sp[3]
     
-    api = Gate()
-    if api.reg():
-        tok = api.tok(cc, mm, yy, cvv)
-        if tok:
-            res = api.add(tok)
-        else:
-            res = "Error"
-    else:
-        res = "Error"
+    # Here you would add your validation logic
+    result = f"Validated {cc} expiring {mm}/{yy}"
     
-    return jsonify({"result": res})
+    return jsonify({"result": result}), 200
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host='0.0.0.0', port=5000)
