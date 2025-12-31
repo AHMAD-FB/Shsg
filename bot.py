@@ -169,17 +169,17 @@ def check_card():
         
         if result == "Approved":
             return jsonify({
-            "status": "OK ✅",
+            "API BY": "@Expert_Programmer",
             "message": result,
+            "status": "APPROVED",
             "input": f"{cc}|{mm}|{yy}|{cvv}",
-            "API BY": "@Expert_Programmer"
         }), 200
         else:
             return jsonify({
-            "status": "OK ✅",
+            "API BY": "@Expert_Programmer",
             "message": result,
+            "status": "DECLINED",
             "input": f"{cc}|{mm}|{yy}|{cvv}",
-            "API BY": "@Expert_Programmer"
         }), 400
             
     except Exception as e:
