@@ -170,7 +170,7 @@ def check_card():
         if result == "Approved":
             return jsonify({"status": "success", "message": result}), 200
         else:
-            return jsonify({"status": "error", "message": result}), 400
+            return jsonify({"status": "error", "message": result},f"\n{cc}|{mm}|{yy}|{cvv}"), 400
             
     except Exception as e:
         print(f"Error processing request: {str(e)}")
