@@ -168,9 +168,19 @@ def check_card():
         result = gate.add_payment_method(pm_id)
         
         if result == "Approved":
-            return jsonify({"status": "APPROVED ✅", "message": result, "cc": f"{cc}|{mm}|{yy}|{cvv}", "API BY": "@Expert_Programmer"}), 200
+            return jsonify({
+            "status": "OK ✅",
+            "message": result,
+            "input": f"{cc}|{mm}|{yy}|{cvv}",
+            "API BY": "@Expert_Programmer"
+        }), 200
         else:
-            return jsonify({"status": "DECLINED ❌", "message": result, "cc": f"{cc}|{mm}|{yy}|{cvv}", "API BY": "@Expert_Programmer"}), 400
+            return jsonify({
+            "status": "OK ✅",
+            "message": result,
+            "input": f"{cc}|{mm}|{yy}|{cvv}",
+            "API BY": "@Expert_Programmer"
+        }), 400
             
     except Exception as e:
         print(f"Error processing request: {str(e)}")
